@@ -1,1 +1,387 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Lino</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif;background:#f5f4f0;display:flex;justify-content:center;min-height:100vh;}
+.app{width:100%;max-width:430px;min-height:100vh;background:#fff;display:flex;flex-direction:column;position:relative;}
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden;}
+.screen.active{display:flex;}
+.tab-bar{display:flex;border-top:0.5px solid #e0ddd5;background:#fff;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom);}
+.tab{flex:1;padding:10px 0 8px;text-align:center;font-size:10px;color:#999;cursor:pointer;border:none;background:none;}
+.tab i{display:block;font-size:20px;margin-bottom:2px;}
+.tab.active{color:#7F77DD;}
+.scroll-area{flex:1;overflow-y:auto;padding:0 16px 24px;}
+
+/* HOME */
+.time-band{padding:32px 16px 20px;background:#EEEDFE;flex-shrink:0;}
+.time-label{font-size:12px;color:#534AB7;margin-bottom:8px;letter-spacing:0.05em;}
+.kanade-row{display:flex;align-items:flex-end;gap:12px;}
+.kanade-fig{width:80px;height:100px;border-radius:16px 16px 0 0;overflow:hidden;flex-shrink:0;background:#ccc;display:flex;align-items:center;justify-content:center;font-size:40px;}
+.kanade-fig img{width:100%;height:100%;object-fit:cover;}
+.kanade-speech{background:#fff;border-radius:12px 12px 12px 0;padding:12px 16px;font-size:14px;color:#333;line-height:1.7;flex:1;}
+.home-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:16px;}
+.action-btn{padding:16px 10px;border-radius:12px;border:0.5px solid #e0ddd5;background:#fff;text-align:center;cursor:pointer;font-size:12px;color:#333;}
+.action-btn i{display:block;font-size:24px;color:#7F77DD;margin-bottom:6px;}
+.action-btn:active{background:#f5f4f0;}
+
+/* BODY */
+.section-head{font-size:14px;font-weight:500;color:#333;margin:20px 0 12px;}
+.bmi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
+.metric-card{background:#f5f4f0;border-radius:10px;padding:14px;}
+.metric-label{font-size:11px;color:#888;margin-bottom:6px;}
+.metric-val{font-size:24px;font-weight:500;color:#333;}
+.metric-unit{font-size:12px;color:#888;}
+.input-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.input-row label{font-size:13px;color:#888;white-space:nowrap;width:72px;}
+.input-row input{flex:1;font-size:16px;padding:10px 12px;border:0.5px solid #ddd;border-radius:10px;background:#fff;color:#333;outline:none;}
+.input-row input:focus{border-color:#7F77DD;}
+.input-row span{font-size:12px;color:#888;white-space:nowrap;}
+.save-btn{width:100%;padding:14px;background:#7F77DD;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;margin-top:8px;}
+.save-btn:active{opacity:0.85;}
+.kanade-resp{background:#EEEDFE;border-radius:12px;padding:14px;margin-top:12px;display:none;}
+.kanade-resp.show{display:block;}
+.resp-text{font-size:14px;color:#3C3489;line-height:1.7;}
+
+/* EXERCISE */
+.ex-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px;}
+.ex-btn{padding:16px 10px;border-radius:12px;border:0.5px solid #e0ddd5;background:#fff;text-align:center;cursor:pointer;font-size:13px;color:#333;}
+.ex-btn i{display:block;font-size:24px;color:#7F77DD;margin-bottom:6px;}
+.ex-btn.selected{background:#EEEDFE;border-color:#7F77DD;color:#3C3489;}
+.ex-btn.selected i{color:#3C3489;}
+.skip i{color:#aaa!important;}
+.skip{color:#aaa!important;}
+
+/* CALENDAR */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.cal-title{font-size:16px;font-weight:500;color:#333;}
+.cal-nav{background:none;border:none;cursor:pointer;color:#999;font-size:20px;padding:4px 8px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:16px;}
+.cal-day-label{text-align:center;font-size:10px;color:#aaa;padding:6px 0;}
+.cal-day{text-align:center;padding:4px 2px;font-size:12px;color:#999;cursor:pointer;border-radius:8px;min-height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.cal-day.today .num{color:#7F77DD;font-weight:500;}
+.cal-day .mark{font-size:16px;line-height:1;display:block;}
+.cal-day .num{font-size:10px;margin-top:2px;display:block;}
+.cal-legend{display:flex;gap:16px;margin-top:8px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#888;}
+
+/* CHAT */
+.chat-header{padding:16px;border-bottom:0.5px solid #e0ddd5;display:flex;align-items:center;gap:12px;flex-shrink:0;background:#fff;}
+.chat-avatar{width:44px;height:44px;border-radius:50%;overflow:hidden;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.chat-avatar img{width:100%;height:100%;object-fit:cover;}
+.chat-name{font-size:16px;font-weight:500;color:#333;}
+.chat-sub{font-size:11px;color:#7F77DD;}
+.messages{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;}
+.msg{max-width:80%;display:flex;flex-direction:column;gap:4px;}
+.msg.user{align-self:flex-end;align-items:flex-end;}
+.msg.kanade{align-self:flex-start;}
+.bubble{padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.7;}
+.msg.user .bubble{background:#7F77DD;color:#fff;border-bottom-right-radius:4px;}
+.msg.kanade .bubble{background:#f5f4f0;color:#333;border-bottom-left-radius:4px;}
+.msg-who{font-size:10px;color:#aaa;}
+.chat-input-area{padding:12px 16px;border-top:0.5px solid #e0ddd5;display:flex;gap:8px;align-items:flex-end;background:#fff;flex-shrink:0;padding-bottom:calc(12px + env(safe-area-inset-bottom));}
+.chat-input{flex:1;font-size:14px;padding:10px 14px;border-radius:20px;border:0.5px solid #ddd;background:#f5f4f0;color:#333;outline:none;resize:none;max-height:100px;line-height:1.5;font-family:inherit;}
+.chat-input:focus{border-color:#7F77DD;}
+.send-btn{width:40px;height:40px;border-radius:50%;background:#7F77DD;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.send-btn:disabled{opacity:0.4;}
+.dots{display:inline-flex;gap:4px;align-items:center;}
+.dots span{width:6px;height:6px;border-radius:50%;background:#7F77DD;animation:bop 1s infinite;}
+.dots span:nth-child(2){animation-delay:.15s;}
+.dots span:nth-child(3){animation-delay:.3s;}
+@keyframes bop{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HOME -->
+  <div class="screen active" id="s-home">
+    <div class="time-band">
+      <div class="time-label" id="time-label">おはよう</div>
+      <div class="kanade-row">
+        <div class="kanade-fig" id="kanade-fig-home">🌿</div>
+        <div class="kanade-speech" id="home-msg">今日も来てくれたね。まず体重から記録してみよう。</div>
+      </div>
+    </div>
+    <div class="home-actions">
+      <div class="action-btn" onclick="switchTab('chat',4)">
+        <i class="ti ti-message-circle"></i>奏に話す
+      </div>
+      <div class="action-btn" onclick="switchTab('body',1)">
+        <i class="ti ti-scale"></i>体重入力
+      </div>
+      <div class="action-btn" onclick="switchTab('exercise',2)">
+        <i class="ti ti-run"></i>運動記録
+      </div>
+      <div class="action-btn" onclick="switchTab('calendar',3)">
+        <i class="ti ti-calendar"></i>カレンダー
+      </div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="screen" id="s-body">
+    <div class="scroll-area">
+      <div class="section-head">からだの記録</div>
+      <div class="bmi-grid">
+        <div class="metric-card">
+          <div class="metric-label">BMI</div>
+          <div class="metric-val" id="bmi-val">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">目標まで</div>
+          <div class="metric-val" id="goal-diff">—</div>
+        </div>
+      </div>
+      <div class="input-row">
+        <label>身長</label>
+        <input type="number" id="height-in" placeholder="160" oninput="calcBMI()"/>
+        <span>cm</span>
+      </div>
+      <div class="input-row">
+        <label>体重</label>
+        <input type="number" id="weight-in" placeholder="52.0" step="0.1" oninput="calcBMI()"/>
+        <span>kg</span>
+      </div>
+      <div class="section-head">目標設定</div>
+      <div class="input-row">
+        <label>目標体重</label>
+        <input type="number" id="goal-in" placeholder="50.0" step="0.1" oninput="calcBMI()"/>
+        <span>kg</span>
+      </div>
+      <div class="input-row">
+        <label>期限（任意）</label>
+        <input type="month" id="deadline-in" style="font-size:13px;"/>
+        <span></span>
+      </div>
+      <button class="save-btn" onclick="saveBody()">保存する</button>
+      <div class="kanade-resp" id="body-resp">
+        <div class="resp-text" id="body-resp-text"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXERCISE -->
+  <div class="screen" id="s-exercise">
+    <div class="scroll-area">
+      <div class="section-head">今日の運動</div>
+      <div class="ex-grid">
+        <div class="ex-btn" onclick="selectEx(this,'散歩')"><i class="ti ti-walk"></i>散歩</div>
+        <div class="ex-btn" onclick="selectEx(this,'ジョギング')"><i class="ti ti-run"></i>ジョギング</div>
+        <div class="ex-btn" onclick="selectEx(this,'筋トレ')"><i class="ti ti-barbell"></i>筋トレ</div>
+        <div class="ex-btn" onclick="selectEx(this,'ヨガ')"><i class="ti ti-yoga"></i>ヨガ</div>
+        <div class="ex-btn" onclick="selectEx(this,'ストレッチ')"><i class="ti ti-stretching"></i>ストレッチ</div>
+        <div class="ex-btn skip" onclick="selectEx(this,'rest')"><i class="ti ti-moon"></i>今日は休む</div>
+      </div>
+      <div class="kanade-resp" id="ex-resp">
+        <div class="resp-text" id="ex-resp-text"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="screen" id="s-calendar">
+    <div class="scroll-area">
+      <div class="section-head">習慣カレンダー</div>
+      <div class="cal-header">
+        <button class="cal-nav" onclick="changeMonth(-1)"><i class="ti ti-chevron-left"></i></button>
+        <div class="cal-title" id="cal-title"></div>
+        <button class="cal-nav" onclick="changeMonth(1)"><i class="ti ti-chevron-right"></i></button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <div class="legend-item"><span>●</span>運動した日</div>
+        <div class="legend-item"><span>○</span>記録した日</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="screen" id="s-chat">
+    <div class="chat-header">
+      <div class="chat-avatar" id="chat-avatar">🌿</div>
+      <div>
+        <div class="chat-name">奏</div>
+        <div class="chat-sub">いつでも話しかけて</div>
+      </div>
+    </div>
+    <div class="messages" id="messages">
+      <div class="msg kanade">
+        <div class="bubble">来てくれたね。今日はどんな感じ？</div>
+        <div class="msg-who">奏</div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <textarea class="chat-input" id="chat-input" placeholder="メッセージ..." rows="1" onkeydown="handleKey(event)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendChat()"><i class="ti ti-arrow-up"></i></button>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchTab('home',0)"><i class="ti ti-home"></i>ホーム</button>
+    <button class="tab" onclick="switchTab('body',1)"><i class="ti ti-scale"></i>からだ</button>
+    <button class="tab" onclick="switchTab('exercise',2)"><i class="ti ti-run"></i>運動</button>
+    <button class="tab" onclick="switchTab('calendar',3)"><i class="ti ti-calendar"></i>カレンダー</button>
+    <button class="tab" onclick="switchTab('chat',4)"><i class="ti ti-message-circle"></i>奏</button>
+  </div>
+</div>
+
+<script>
+// ===== 画像設定 =====
+// 画像を用意したらURLをここに入れるだけでOK
+const IMAGES = {
+  kanade_morning: '',     // 例: '/images/kanade_morning.png'
+  kanade_afternoon: '',
+  kanade_night: '',
+};
+
+// ===== 時間帯 =====
+const hr = new Date().getHours();
+const timeKey = hr < 12 ? 'morning' : hr < 18 ? 'afternoon' : 'night';
+const timeLabels = {morning:'おはよう', afternoon:'こんにちは', night:'こんばんは'};
+const homeGreets = {
+  morning:'今日も来てくれたね。まず体重から記録してみよう。',
+  afternoon:'お昼も頑張ってる？今日の記録、残しておこう。',
+  night:'お疲れさま。今日もちゃんと来てくれたね。'
+};
+document.getElementById('time-label').textContent = timeLabels[timeKey];
+document.getElementById('home-msg').textContent = homeGreets[timeKey];
+
+function setImg(elId, url, fallback) {
+  const el = document.getElementById(elId);
+  if (url) { el.innerHTML = '<img src="' + url + '" alt=""/>'; }
+  else { el.textContent = fallback; }
+}
+setImg('kanade-fig-home', IMAGES['kanade_' + timeKey], '🌿');
+setImg('chat-avatar', IMAGES['kanade_' + timeKey], '🌿');
+
+// ===== タブ切り替え =====
+const screenIds = ['s-home','s-body','s-exercise','s-calendar','s-chat'];
+const tabs = document.querySelectorAll('.tab');
+function switchTab(name, idx) {
+  const map = {home:0,body:1,exercise:2,calendar:3,chat:4};
+  const i = typeof idx === 'number' ? idx : map[name];
+  screenIds.forEach(function(id,j){ document.getElementById(id).classList.toggle('active', j===i); });
+  tabs.forEach(function(t,j){ t.classList.toggle('active', j===i); });
+  if (i === 3) renderCal();
+}
+
+// ===== からだ =====
+function calcBMI() {
+  const h = parseFloat(document.getElementById('height-in').value);
+  const w = parseFloat(document.getElementById('weight-in').value);
+  const g = parseFloat(document.getElementById('goal-in').value);
+  if (h && w) document.getElementById('bmi-val').textContent = (w/(h/100*h/100)).toFixed(1);
+  if (w && g) {
+    const diff = (w-g).toFixed(1);
+    document.getElementById('goal-diff').textContent = (diff>0?'-':'+')+Math.abs(diff)+'kg';
+  }
+}
+const bodyTpl = ['記録してくれてありがとう。ちゃんと把握してるだけで違うよ。','数字より、続けてること自体がえらいと思う。','更新できたね。それだけで十分。'];
+function saveBody() {
+  const resp = document.getElementById('body-resp');
+  resp.classList.add('show');
+  document.getElementById('body-resp-text').textContent = bodyTpl[Math.floor(Math.random()*bodyTpl.length)];
+}
+
+// ===== 運動 =====
+const exTpl = {
+  '散歩':['散歩か、いいね。外の空気ってやっぱり違うよ。','ゆっくりでも動いた日は、ちゃんと積み重なってるよ。'],
+  'ジョギング':['走ったんだ、すごい。体が喜んでそう。','ジョギングできた日って、なんか気持ちいいよね。'],
+  '筋トレ':['筋トレか、かっこいい。続けてね。','じわじわ変わってくるから、焦らなくていいよ。'],
+  'ヨガ':['ヨガって体と心両方整う感じがするよね。','ゆったりできた？それも立派な運動だよ。'],
+  'ストレッチ':['ストレッチだけでも、やった日はやった日だよ。','体のケアできてるね、えらい。'],
+  'rest':['休む日も大事だよ。ちゃんと体を労ってね。','今日は休日。それでいい。明日また来てね。']
+};
+const calData = {};
+function selectEx(el, type) {
+  document.querySelectorAll('.ex-btn').forEach(function(b){ b.classList.remove('selected'); });
+  el.classList.add('selected');
+  const resp = document.getElementById('ex-resp');
+  resp.classList.add('show');
+  const arr = exTpl[type]||['お疲れさま。'];
+  document.getElementById('ex-resp-text').textContent = arr[Math.floor(Math.random()*arr.length)];
+  const t = new Date();
+  const key = t.getFullYear()+'-'+t.getMonth()+'-'+t.getDate();
+  calData[key] = type==='rest'?'rec':'ex';
+}
+
+// ===== カレンダー =====
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+function renderCal() {
+  document.getElementById('cal-title').textContent = calYear+'年'+(calMonth+1)+'月';
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+  ['日','月','火','水','木','金','土'].forEach(function(d){
+    const el = document.createElement('div');
+    el.className='cal-day-label'; el.textContent=d; grid.appendChild(el);
+  });
+  const first = new Date(calYear,calMonth,1).getDay();
+  const days = new Date(calYear,calMonth+1,0).getDate();
+  const today = new Date();
+  for(let i=0;i<first;i++) grid.appendChild(Object.assign(document.createElement('div'),{className:'cal-day'}));
+  for(let d=1;d<=days;d++){
+    const el=document.createElement('div'); el.className='cal-day';
+    const key=calYear+'-'+calMonth+'-'+d;
+    const mark=calData[key];
+    if(calYear===today.getFullYear()&&calMonth===today.getMonth()&&d===today.getDate()) el.classList.add('today');
+    el.innerHTML='<span class="mark">'+(mark==='ex'?'●':mark==='rec'?'○':'')+'</span><span class="num">'+d+'</span>';
+    el.onclick=function(){ calData[key]=calData[key]==='ex'?'rec':calData[key]==='rec'?undefined:'ex'; if(!calData[key])delete calData[key]; renderCal(); };
+    grid.appendChild(el);
+  }
+}
+function changeMonth(dir){
+  calMonth+=dir;
+  if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;}
+  renderCal();
+}
+
+// ===== チャット =====
+const chatHistory=[];
+const SYS='あなたはダイエット・生活習慣アプリ「Lino」のキャラクター「奏」です。ユーザーの日常に寄り添い、短く温かい言葉で返します。返答は必ず3文以内。カウンセリングや長文アドバイスはしない。自然な会話で、ときどき記録（体重・運動）へ優しく誘導してもOK。絵文字は1個まで。';
+const API_KEY='YOUR_API_KEY_HERE'; // ← AnthropicのAPIキーに置き換えてください
+
+function addMsg(role,content){
+  const msgs=document.getElementById('messages');
+  const div=document.createElement('div');
+  div.className='msg '+(role==='user'?'user':'kanade');
+  div.innerHTML='<div class="bubble">'+content+'</div><div class="msg-who">'+(role==='user'?'あなた':'奏')+'</div>';
+  msgs.appendChild(div); msgs.scrollTop=99999; return div;
+}
+function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();} }
+async function sendChat(){
+  const inp=document.getElementById('chat-input');
+  const txt=inp.value.trim(); if(!txt)return;
+  const btn=document.getElementById('send-btn');
+  btn.disabled=true; inp.value=''; inp.style.height='auto';
+  addMsg('user',txt);
+  chatHistory.push({role:'user',content:txt});
+  const thinking=addMsg('kanade','<div class="dots"><span></span><span></span><span></span></div>');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,system:SYS,messages:chatHistory})
+    });
+    const data=await res.json();
+    const reply=data.content?.[0]?.text||'うん、聞いてるよ。';
+    chatHistory.push({role:'assistant',content:reply});
+    thinking.querySelector('.bubble').textContent=reply;
+  }catch{
+    thinking.querySelector('.bubble').textContent='ちょっと聞こえなかった、もう一回教えて。';
+  }
+  btn.disabled=false;
+}
+document.getElementById('chat-input').addEventListener('input',function(){
+  this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,100)+'px';
+});
+renderCal();
+</script>
+</body>
+</html>
