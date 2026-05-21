@@ -168,7 +168,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sa
   <!-- EXERCISE -->
   <div class="screen" id="s-exercise">
     <div class="scroll-area">
-      <div class="section-head">今日の運動</div>
+      <div class="section-head">運動の記録</div>
+      <div class="input-row">
+        <label>📅 日付</label>
+        <input type="date" id="ex-date" style="font-size:14px;"/>
+        <span></span>
+      </div>
       <div class="ex-grid">
         <div class="ex-btn" onclick="selectEx(this,'散歩')"><i class="ti ti-walk"></i>散歩</div>
         <div class="ex-btn" onclick="selectEx(this,'ジョギング')"><i class="ti ti-run"></i>ジョギング</div>
@@ -298,6 +303,16 @@ const exTpl = {
   'rest':['休む日も大事だよ。ちゃんと体を労ってね。','今日は休日。それでいい。明日また来てね。']
 };
 const calData = {};
+
+// 日付inputを今日に初期化
+(function(){
+  const t = new Date();
+  const yyyy = t.getFullYear();
+  const mm = String(t.getMonth()+1).padStart(2,'0');
+  const dd = String(t.getDate()).padStart(2,'0');
+  document.getElementById('ex-date').value = yyyy+'-'+mm+'-'+dd;
+})();
+
 function selectEx(el, type) {
   document.querySelectorAll('.ex-btn').forEach(function(b){ b.classList.remove('selected'); });
   el.classList.add('selected');
@@ -305,8 +320,16 @@ function selectEx(el, type) {
   resp.classList.add('show');
   const arr = exTpl[type]||['お疲れさま。'];
   document.getElementById('ex-resp-text').textContent = arr[Math.floor(Math.random()*arr.length)];
-  const t = new Date();
-  const key = t.getFullYear()+'-'+t.getMonth()+'-'+t.getDate();
+  // 選択した日付でカレンダーに記録
+  const dateVal = document.getElementById('ex-date').value;
+  let key;
+  if(dateVal){
+    const parts = dateVal.split('-');
+    key = parts[0]+'-'+(parseInt(parts[1])-1)+'-'+parseInt(parts[2]);
+  } else {
+    const t = new Date();
+    key = t.getFullYear()+'-'+t.getMonth()+'-'+t.getDate();
+  }
   calData[key] = type==='rest'?'rec':'ex';
 }
 
